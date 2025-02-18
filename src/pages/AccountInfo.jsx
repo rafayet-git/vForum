@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 const AccountInfo = () => {
     const userId = localStorage.getItem('userid');
-    const [userInfo, setUserInfo] = useState({ displayname: '', pfp: '', bio: '' });
+    const [userInfo, setUserInfo] = useState({userid: '', displayname: '', pfp: '', bio: '' });
     // updates UserInfo on change
     const handleChange = (event) => {
         const {name, value} = event.target;
@@ -24,7 +24,7 @@ const AccountInfo = () => {
                     .eq('userid', userId)
                     .single();
                 if (data) {
-                    setUserInfo(data);
+                    setUserInfo({ ...data, userid: userId });
                 } else {
                     console.error('Error fetching user info:', error);
                 }
@@ -62,7 +62,7 @@ const AccountInfo = () => {
                     <label>
                         User ID:
                         <input type="text" name="userid" value={userId} disabled />  
-                        <p><small>Remember this value, as you will need it for future logins</small></p>                      
+                        <p><small>Remember this value, as you will need it for future logins!</small></p>                      
                     </label>
                     <label>
                         Display Name:
@@ -91,25 +91,28 @@ const AccountInfo = () => {
                 <form>
                     <label>
                         Existing UUID:
-                        <input type="text" name="existingUuid" />
+                        <input type="text" name="userid" onChange={handleChange} />
                     </label>
-                    <button type="submit">Login</button>
+                    <button type="submit" onClick={loginUser}>Login</button>
                 </form>
                 <h3>Or</h3>
                 <form>
                     <label>
                         Display Name:
-                        <input type="text" name="displayname" />
+                        <input type="text" name="displayname" onChange={handleChange}/>
+                        <p><small>The name people will see you as.</small></p>   
                     </label>
                     <label>
                         Profile Picture URL:
-                        <input type="text" name="pfp" />
+                        <input type="text" name="pfp" onChange={handleChange} />
+                        <p><small>An image that perfectly describes you.</small></p>
                     </label>
                     <label>
                         Bio:
-                        <textarea name="bio"></textarea>
+                        <textarea name="bio" onChange={handleChange} ></textarea>
+                        <p><small>Tell us about yourself!</small></p>   
                     </label>
-                    <button type="submit">Create Account</button>
+                    <button type="submit" onClick={createUser}>Create Account</button>
                 </form>
             </div>
         );
