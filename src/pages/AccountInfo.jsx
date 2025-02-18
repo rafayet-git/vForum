@@ -1,5 +1,6 @@
 import { supabase } from '../client'
 import { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const AccountInfo = () => {
     const userId = localStorage.getItem('userid');
@@ -35,22 +36,72 @@ const AccountInfo = () => {
     }, [userId]);
 
     const updateUser = async (event) => {
-    
+        event.preventDefault();
+        const { error } = await supabase
+            .from('users')
+            .update({ displayname: userInfo.displayname, pfp: userInfo.pfp, bio: userInfo.bio })
+            .eq('userid', userId);
+        if (error) {
+            console.error('Error updating user info:', error);
+        } else {
+            window.location = "/";   
+        }
     }
     const deleteUser = async (event) => {
-    
+        event.preventDefault();
+
+        const confirmDelete = window.confirm("Are you sure you want to delete your account? Your posts and comments can still be seen, but your details will be removed.");
+        if (confirmDelete) {
+            const { error } = await supabase
+                .from('users')
+                .delete()
+                .eq('userid', userId);
+            if (error) {
+                console.error('Error updating user info:', error);
+            } else {
+                localStorage.removeItem('userid');
+                window.location = "/";   
+            }
+        }
     }
     const createUser = async (event) => {
+        event.preventDefault();
+
+        const newUserId = uuidv4();
+        const { error } = await supabase
+            .from('users')
+            .insert({ userid: newUserId, displayname: userInfo.displayname, pfp: userInfo.pfp, bio: userInfo.bio });
+        
+        if (error) {
+            console.error('Error creating user:', error);
+        } else {
+            localStorage.setItem('userid', newUserId);
+            window.location = "/";
+        }
 
     }
     
     const loginUser = async (event) => {
+        event.preventDefault();
 
+        const { data, error } = await supabase
+            .from('users')
+            .select('userid')
+            .eq('userid', userInfo.userid)
+            .single();
+        
+        if (error || !data) {
+            console.error('User not found:', error);
+            return;
+        } else{
+            localStorage.setItem('userid', userInfo.userid);
+            window.location = "/";
+        }
     }
 
     const logoutUser = () => {
         localStorage.removeItem('userid');
-        window.location.reload();
+        window.location = "/";
     };
 
     if (userId) {
@@ -78,6 +129,7 @@ const AccountInfo = () => {
                     </label>
                     <button type="submit" onClick={updateUser}> Update</button>
                 </form>
+                <h3>Other options:</h3>
                 <button onClick={logoutUser}>Logout</button>
                 <button onClick={deleteUser} id="delete" >Delete Account</button>
             </div>
